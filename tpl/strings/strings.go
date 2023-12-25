@@ -532,3 +532,37 @@ func (ns *Namespace) Repeat(n, s any) (string, error) {
 
 	return strings.Repeat(ss, sn), nil
 }
+
+// WordWrap returns the given string, split by newlines such that each line
+// does not exceed the given length.
+func (ns *Namespace) WordWrap(n, s any) (string, error) {
+	ss, err := cast.ToStringE(s)
+	if err != nil {
+		return "", err
+	}
+
+	sn, err := cast.ToIntE(n)
+	if err != nil || sn < 1 {
+		return "", fmt.Errorf("length must be a positive integer")
+	}
+
+	var b strings.Builder
+	var line string
+
+	words := strings.Fields(ss)
+	for i, w := range words {
+		temp := line + w + " "
+		if utf8.RuneCountInString(temp) > sn+1 {
+			b.WriteString(strings.TrimSpace(line) + "\n")
+			line = w + " "
+		} else {
+			line = temp
+		}
+
+		if i+1 == len(words) {
+			b.WriteString(strings.TrimSpace(line))
+		}
+	}
+
+	return b.String(), nil
+}

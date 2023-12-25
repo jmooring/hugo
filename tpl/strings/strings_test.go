@@ -854,3 +854,32 @@ func TestDiff(t *testing.T) {
 
 	}
 }
+
+func TestWordWrap(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	for _, test := range []struct {
+		n      any
+		s      any
+		expect string
+		isErr  bool
+	}{
+		{80, "Able was I, ere I saw Elba.", "Able was I, ere I saw Elba.", false},
+		{15, "Able was I, ere I saw Elba.", "Able was I, ere\nI saw Elba.", false},
+		{80, "Able was I, ere\nI saw Elba.", "Able was I, ere I saw Elba.", false},
+		{5, "世界 世界 世界 世界 世界.", "世界 世界\n世界 世界\n世界.", false},
+		{80, "", "", false},
+		{0, "", "", true},
+	} {
+		result, err := ns.WordWrap(test.n, test.s)
+
+		if test.isErr {
+			c.Assert(err, qt.IsNotNil)
+			continue
+		}
+
+		c.Assert(err, qt.IsNil)
+		c.Assert(result, qt.Equals, test.expect)
+	}
+}

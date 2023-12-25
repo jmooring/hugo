@@ -242,6 +242,14 @@ func init() {
 			},
 		)
 
+		ns.AddMethodMapping(ctx.WordWrap,
+			nil,
+			[][2]string{
+				{`{{ strings.WordWrap 6 "Hello world." }}`, `Hello\nworld.`},
+				{`{{ strings.WordWrap 80 "Hello\nworld." }}`, `Hello world.`},
+			},
+		)
+
 		return ns
 	}
 
