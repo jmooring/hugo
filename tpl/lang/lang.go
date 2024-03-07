@@ -24,6 +24,8 @@ import (
 
 	"github.com/gohugoio/locales"
 	translators "github.com/gohugoio/localescompressed"
+	"golang.org/x/text/language"
+	"golang.org/x/text/language/display"
 
 	"github.com/gohugoio/hugo/common/hreflect"
 	"github.com/gohugoio/hugo/common/hugo"
@@ -263,4 +265,26 @@ func (ns *Namespace) Merge(p2, p1 any) (any, error) {
 		return nil, fmt.Errorf("language merge not supported for %T", p1)
 	}
 	return merger.MergeByLanguageInterface(p2)
+}
+
+// LanguageName returns the language name corresponding to the source language
+// tag, translated to the language of the target language tag. If not
+// specified, the target language tag is set to the source language tag. Both
+// language tags must conform to RFC 5646.
+func (ns *Namespace) LanguageName(source string, target ...string) (string, error) {
+	st, err := language.Parse(source)
+	if err != nil {
+		return "", fmt.Errorf("language tag %q is not well-formed", source)
+	}
+	if len(target) == 0 {
+		return display.Self.Name(st), nil
+	}
+	if len(target) == 1 {
+		tt, err := language.Parse(target[0])
+		if err != nil {
+			return "", fmt.Errorf("language tag %q is not well-formed", target[0])
+		}
+		return display.Languages(tt).Name(st), nil
+	}
+	return "", fmt.Errorf("wrong number of args: want 1 or 2")
 }
