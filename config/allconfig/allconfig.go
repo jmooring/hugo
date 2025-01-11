@@ -53,6 +53,7 @@ import (
 	"github.com/gohugoio/hugo/resources/kinds"
 	"github.com/gohugoio/hugo/resources/page"
 	"github.com/gohugoio/hugo/resources/page/pagemeta"
+	"github.com/gohugoio/hugo/tpl/diagrams/diagrams_config"
 	"github.com/spf13/afero"
 
 	xmaps "golang.org/x/exp/maps"
@@ -120,6 +121,14 @@ type Config struct {
 	// <docsmeta>{"identifiers": ["caches"] }</docsmeta>
 	Caches filecache.Configs `mapstructure:"-"`
 
+	// The cascade configuration section contains the top level front matter cascade configuration options,
+	// a slice of page matcher and params to apply to those pages.
+	Cascade *config.ConfigNamespace[[]page.PageMatcherParamsConfig, map[page.PageMatcher]maps.Params] `mapstructure:"-"`
+
+	// The diagrams configuration section contains configuration options for creating diagrams.
+	// <docsmeta>{"identifiers": ["diagrams"] }</docsmeta>
+	Diagrams diagrams_config.Config `mapstructure:"-"`
+
 	// The httpcache configuration section contains HTTP-cache-related configuration options.
 	// <docsmeta>{"identifiers": ["httpcache"] }</docsmeta>
 	HTTPCache httpcache.Config `mapstructure:"-"`
@@ -128,11 +137,35 @@ type Config struct {
 	// <docsmeta>{"identifiers": ["markup"] }</docsmeta>
 	Markup markup_config.Config `mapstructure:"-"`
 
+	// Menu configuration.
+	// <docsmeta>{"refs": ["config:languages:menus"] }</docsmeta>
+	Menus *config.ConfigNamespace[map[string]navigation.MenuConfig, navigation.Menus] `mapstructure:"-"`
+
 	// The mediatypes configuration section maps the MIME type (a string) to a configuration object for that type.
 	// <docsmeta>{"identifiers": ["mediatypes"], "refs": ["types:media:type"] }</docsmeta>
 	MediaTypes *config.ConfigNamespace[map[string]media.MediaTypeConfig, media.Types] `mapstructure:"-"`
 
+	// User provided parameters.
+	// <docsmeta>{"refs": ["config:languages:params"] }</docsmeta>
+	Params maps.Params `mapstructure:"-"`
+
+	// The deployment configuration section contains for hugo deployconfig.
+	Deployment deployconfig.DeployConfig `mapstructure:"-"`
+
+	// Front matter configuration.
+	Frontmatter pagemeta.FrontmatterConfig `mapstructure:"-"`
+
+	// Imaging configuration.
 	Imaging *config.ConfigNamespace[images.ImagingConfig, images.ImagingConfigInternal] `mapstructure:"-"`
+
+	// The languages configuration sections maps a language code (a string) to a configuration object for that language.
+	Languages map[string]langs.LanguageConfig `mapstructure:"-"`
+
+	// Minification configuration.
+	Minify minifiers.MinifyConfig `mapstructure:"-"`
+
+	// Module configuration.
+	Module modules.Config `mapstructure:"-"`
 
 	// The outputformats configuration sections maps a format name (a string) to a configuration object for that format.
 	OutputFormats *config.ConfigNamespace[map[string]output.OutputFormatConfig, output.Formats] `mapstructure:"-"`
@@ -141,65 +174,38 @@ type Config struct {
 	// This can be overridden in the front matter.
 	Outputs map[string][]string `mapstructure:"-"`
 
-	// The cascade configuration section contains the top level front matter cascade configuration options,
-	// a slice of page matcher and params to apply to those pages.
-	Cascade *config.ConfigNamespace[[]page.PageMatcherParamsConfig, map[page.PageMatcher]maps.Params] `mapstructure:"-"`
-
-	// The segments defines segments for the site. Used for partial/segmented builds.
-	Segments *config.ConfigNamespace[map[string]segments.SegmentConfig, segments.Segments] `mapstructure:"-"`
-
-	// Menu configuration.
-	// <docsmeta>{"refs": ["config:languages:menus"] }</docsmeta>
-	Menus *config.ConfigNamespace[map[string]navigation.MenuConfig, navigation.Menus] `mapstructure:"-"`
-
-	// The deployment configuration section contains for hugo deployconfig.
-	Deployment deployconfig.DeployConfig `mapstructure:"-"`
-
-	// Module configuration.
-	Module modules.Config `mapstructure:"-"`
-
-	// Front matter configuration.
-	Frontmatter pagemeta.FrontmatterConfig `mapstructure:"-"`
-
-	// Minification configuration.
-	Minify minifiers.MinifyConfig `mapstructure:"-"`
-
-	// Permalink configuration.
-	Permalinks map[string]map[string]string `mapstructure:"-"`
-
-	// Taxonomy configuration.
-	Taxonomies map[string]string `mapstructure:"-"`
-
-	// Sitemap configuration.
-	Sitemap config.SitemapConfig `mapstructure:"-"`
-
-	// Related content configuration.
-	Related related.Config `mapstructure:"-"`
-
-	// Server configuration.
-	Server config.Server `mapstructure:"-"`
+	// Page configuration.
+	Page config.PageConfig `mapstructure:"-"`
 
 	// Pagination configuration.
 	Pagination config.Pagination `mapstructure:"-"`
 
-	// Page configuration.
-	Page config.PageConfig `mapstructure:"-"`
+	// Permalink configuration.
+	Permalinks map[string]map[string]string `mapstructure:"-"`
 
 	// Privacy configuration.
 	Privacy privacy.Config `mapstructure:"-"`
 
+	// Related content configuration.
+	Related related.Config `mapstructure:"-"`
+
 	// Security configuration.
 	Security security.Config `mapstructure:"-"`
+
+	// The segments defines segments for the site. Used for partial/segmented builds.
+	Segments *config.ConfigNamespace[map[string]segments.SegmentConfig, segments.Segments] `mapstructure:"-"`
 
 	// Services configuration.
 	Services services.Config `mapstructure:"-"`
 
-	// User provided parameters.
-	// <docsmeta>{"refs": ["config:languages:params"] }</docsmeta>
-	Params maps.Params `mapstructure:"-"`
+	// Server configuration.
+	Server config.Server `mapstructure:"-"`
 
-	// The languages configuration sections maps a language code (a string) to a configuration object for that language.
-	Languages map[string]langs.LanguageConfig `mapstructure:"-"`
+	// Sitemap configuration.
+	Sitemap config.SitemapConfig `mapstructure:"-"`
+
+	// Taxonomy configuration.
+	Taxonomies map[string]string `mapstructure:"-"`
 
 	// UglyURLs configuration. Either a boolean or a sections map.
 	UglyURLs any `mapstructure:"-"`

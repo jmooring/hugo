@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/gohugoio/hugo/cache/filecache"
+	"github.com/gohugoio/hugo/tpl/diagrams/diagrams_config"
 
 	"github.com/gohugoio/hugo/cache/httpcache"
 	"github.com/gohugoio/hugo/common/maps"
@@ -75,11 +76,21 @@ var allDecoderSetups = map[string]decodeWeight{
 			return nil
 		},
 	},
-	"imaging": {
-		key: "imaging",
+	"build": {
+		key: "build",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			p.c.Build = config.DecodeBuildConfig(p.p)
+			return nil
+		},
+		getCompiler: func(c *Config) configCompiler {
+			return &c.Build
+		},
+	},
+	"cascade": {
+		key: "cascade",
 		decode: func(d decodeWeight, p decodeConfig) error {
 			var err error
-			p.c.Imaging, err = images.DecodeConfig(p.p.GetStringMap(d.key))
+			p.c.Cascade, err = page.DecodeCascadeConfig(nil, p.p.Get(d.key))
 			return err
 		},
 	},
@@ -98,6 +109,30 @@ var allDecoderSetups = map[string]decodeWeight{
 			return err
 		},
 	},
+	"deployment": {
+		key: "deployment",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.Deployment, err = deployconfig.DecodeConfig(p.p)
+			return err
+		},
+	},
+	"diagrams": {
+		key: "diagrams",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.Diagrams, err = diagrams_config.Decode(p.p)
+			return err
+		},
+	},
+	"frontmatter": {
+		key: "frontmatter",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.Frontmatter, err = pagemeta.DecodeFrontMatterConfig(p.p)
+			return err
+		},
+	},
 	"httpcache": {
 		key: "httpcache",
 		decode: func(d decodeWeight, p decodeConfig) error {
@@ -110,164 +145,12 @@ var allDecoderSetups = map[string]decodeWeight{
 			return err
 		},
 	},
-	"build": {
-		key: "build",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			p.c.Build = config.DecodeBuildConfig(p.p)
-			return nil
-		},
-		getCompiler: func(c *Config) configCompiler {
-			return &c.Build
-		},
-	},
-	"frontmatter": {
-		key: "frontmatter",
+	"imaging": {
+		key: "imaging",
 		decode: func(d decodeWeight, p decodeConfig) error {
 			var err error
-			p.c.Frontmatter, err = pagemeta.DecodeFrontMatterConfig(p.p)
+			p.c.Imaging, err = images.DecodeConfig(p.p.GetStringMap(d.key))
 			return err
-		},
-	},
-	"markup": {
-		key: "markup",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			var err error
-			p.c.Markup, err = markup_config.Decode(p.p)
-			return err
-		},
-	},
-	"segments": {
-		key: "segments",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			var err error
-			p.c.Segments, err = segments.DecodeSegments(p.p.GetStringMap(d.key))
-			return err
-		},
-	},
-	"server": {
-		key: "server",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			var err error
-			p.c.Server, err = config.DecodeServer(p.p)
-			return err
-		},
-		getCompiler: func(c *Config) configCompiler {
-			return &c.Server
-		},
-	},
-	"minify": {
-		key: "minify",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			var err error
-			p.c.Minify, err = minifiers.DecodeConfig(p.p.Get(d.key))
-			return err
-		},
-	},
-	"mediatypes": {
-		key: "mediatypes",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			var err error
-			p.c.MediaTypes, err = media.DecodeTypes(p.p.GetStringMap(d.key))
-			return err
-		},
-	},
-	"outputs": {
-		key: "outputs",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			defaults := createDefaultOutputFormats(p.c.OutputFormats.Config)
-			m := maps.CleanConfigStringMap(p.p.GetStringMap("outputs"))
-			p.c.Outputs = make(map[string][]string)
-			for k, v := range m {
-				s := types.ToStringSlicePreserveString(v)
-				for i, v := range s {
-					s[i] = strings.ToLower(v)
-				}
-				p.c.Outputs[k] = s
-			}
-			// Apply defaults.
-			for k, v := range defaults {
-				if _, found := p.c.Outputs[k]; !found {
-					p.c.Outputs[k] = v
-				}
-			}
-			return nil
-		},
-	},
-	"outputformats": {
-		key: "outputformats",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			var err error
-			p.c.OutputFormats, err = output.DecodeConfig(p.c.MediaTypes.Config, p.p.Get(d.key))
-			return err
-		},
-	},
-	"params": {
-		key: "params",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			p.c.Params = maps.CleanConfigStringMap(p.p.GetStringMap("params"))
-			if p.c.Params == nil {
-				p.c.Params = make(map[string]any)
-			}
-
-			// Before Hugo 0.112.0 this was configured via site Params.
-			if mainSections, found := p.c.Params["mainsections"]; found {
-				p.c.MainSections = types.ToStringSlicePreserveString(mainSections)
-				if p.c.MainSections == nil {
-					p.c.MainSections = []string{}
-				}
-			}
-
-			return nil
-		},
-	},
-	"module": {
-		key: "module",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			var err error
-			p.c.Module, err = modules.DecodeConfig(p.p)
-			return err
-		},
-	},
-	"permalinks": {
-		key: "permalinks",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			var err error
-			p.c.Permalinks, err = page.DecodePermalinksConfig(p.p.GetStringMap(d.key))
-			return err
-		},
-	},
-	"sitemap": {
-		key: "sitemap",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			var err error
-			p.c.Sitemap, err = config.DecodeSitemap(config.SitemapConfig{Priority: -1, Filename: "sitemap.xml"}, p.p.GetStringMap(d.key))
-			return err
-		},
-	},
-	"taxonomies": {
-		key: "taxonomies",
-		decode: func(d decodeWeight, p decodeConfig) error {
-			p.c.Taxonomies = maps.CleanConfigStringMapString(p.p.GetStringMapString(d.key))
-			return nil
-		},
-	},
-	"related": {
-		key:    "related",
-		weight: 100, // This needs to be decoded after taxonomies.
-		decode: func(d decodeWeight, p decodeConfig) error {
-			if p.p.IsSet(d.key) {
-				var err error
-				p.c.Related, err = related.DecodeConfig(p.p.GetParams(d.key))
-				if err != nil {
-					return fmt.Errorf("failed to decode related config: %w", err)
-				}
-			} else {
-				p.c.Related = related.DefaultConfig
-				if _, found := p.c.Taxonomies["tag"]; found {
-					p.c.Related.Add(related.IndexConfig{Name: "tags", Weight: 80, Type: related.TypeBasic})
-				}
-			}
-			return nil
 		},
 	},
 	"languages": {
@@ -311,11 +194,19 @@ var allDecoderSetups = map[string]decodeWeight{
 			return nil
 		},
 	},
-	"cascade": {
-		key: "cascade",
+	"markup": {
+		key: "markup",
 		decode: func(d decodeWeight, p decodeConfig) error {
 			var err error
-			p.c.Cascade, err = page.DecodeCascadeConfig(nil, p.p.Get(d.key))
+			p.c.Markup, err = markup_config.Decode(p.p)
+			return err
+		},
+	},
+	"mediatypes": {
+		key: "mediatypes",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.MediaTypes, err = media.DecodeTypes(p.p.GetStringMap(d.key))
 			return err
 		},
 	},
@@ -325,6 +216,52 @@ var allDecoderSetups = map[string]decodeWeight{
 			var err error
 			p.c.Menus, err = navigation.DecodeConfig(p.p.Get(d.key))
 			return err
+		},
+	},
+	"minify": {
+		key: "minify",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.Minify, err = minifiers.DecodeConfig(p.p.Get(d.key))
+			return err
+		},
+	},
+	"module": {
+		key: "module",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.Module, err = modules.DecodeConfig(p.p)
+			return err
+		},
+	},
+	"outputformats": {
+		key: "outputformats",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.OutputFormats, err = output.DecodeConfig(p.c.MediaTypes.Config, p.p.Get(d.key))
+			return err
+		},
+	},
+	"outputs": {
+		key: "outputs",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			defaults := createDefaultOutputFormats(p.c.OutputFormats.Config)
+			m := maps.CleanConfigStringMap(p.p.GetStringMap("outputs"))
+			p.c.Outputs = make(map[string][]string)
+			for k, v := range m {
+				s := types.ToStringSlicePreserveString(v)
+				for i, v := range s {
+					s[i] = strings.ToLower(v)
+				}
+				p.c.Outputs[k] = s
+			}
+			// Apply defaults.
+			for k, v := range defaults {
+				if _, found := p.c.Outputs[k]; !found {
+					p.c.Outputs[k] = v
+				}
+			}
+			return nil
 		},
 	},
 	"page": {
@@ -362,12 +299,58 @@ var allDecoderSetups = map[string]decodeWeight{
 			return nil
 		},
 	},
+	"params": {
+		key: "params",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			p.c.Params = maps.CleanConfigStringMap(p.p.GetStringMap("params"))
+			if p.c.Params == nil {
+				p.c.Params = make(map[string]any)
+			}
+
+			// Before Hugo 0.112.0 this was configured via site Params.
+			if mainSections, found := p.c.Params["mainsections"]; found {
+				p.c.MainSections = types.ToStringSlicePreserveString(mainSections)
+				if p.c.MainSections == nil {
+					p.c.MainSections = []string{}
+				}
+			}
+
+			return nil
+		},
+	},
+	"permalinks": {
+		key: "permalinks",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.Permalinks, err = page.DecodePermalinksConfig(p.p.GetStringMap(d.key))
+			return err
+		},
+	},
 	"privacy": {
 		key: "privacy",
 		decode: func(d decodeWeight, p decodeConfig) error {
 			var err error
 			p.c.Privacy, err = privacy.DecodeConfig(p.p)
 			return err
+		},
+	},
+	"related": {
+		key:    "related",
+		weight: 100, // This needs to be decoded after taxonomies.
+		decode: func(d decodeWeight, p decodeConfig) error {
+			if p.p.IsSet(d.key) {
+				var err error
+				p.c.Related, err = related.DecodeConfig(p.p.GetParams(d.key))
+				if err != nil {
+					return fmt.Errorf("failed to decode related config: %w", err)
+				}
+			} else {
+				p.c.Related = related.DefaultConfig
+				if _, found := p.c.Taxonomies["tag"]; found {
+					p.c.Related.Add(related.IndexConfig{Name: "tags", Weight: 80, Type: related.TypeBasic})
+				}
+			}
+			return nil
 		},
 	},
 	"security": {
@@ -378,6 +361,25 @@ var allDecoderSetups = map[string]decodeWeight{
 			return err
 		},
 	},
+	"segments": {
+		key: "segments",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.Segments, err = segments.DecodeSegments(p.p.GetStringMap(d.key))
+			return err
+		},
+	},
+	"server": {
+		key: "server",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.Server, err = config.DecodeServer(p.p)
+			return err
+		},
+		getCompiler: func(c *Config) configCompiler {
+			return &c.Server
+		},
+	},
 	"services": {
 		key: "services",
 		decode: func(d decodeWeight, p decodeConfig) error {
@@ -386,12 +388,19 @@ var allDecoderSetups = map[string]decodeWeight{
 			return err
 		},
 	},
-	"deployment": {
-		key: "deployment",
+	"sitemap": {
+		key: "sitemap",
 		decode: func(d decodeWeight, p decodeConfig) error {
 			var err error
-			p.c.Deployment, err = deployconfig.DecodeConfig(p.p)
+			p.c.Sitemap, err = config.DecodeSitemap(config.SitemapConfig{Priority: -1, Filename: "sitemap.xml"}, p.p.GetStringMap(d.key))
 			return err
+		},
+	},
+	"taxonomies": {
+		key: "taxonomies",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			p.c.Taxonomies = maps.CleanConfigStringMapString(p.p.GetStringMapString(d.key))
+			return nil
 		},
 	},
 	"author": {

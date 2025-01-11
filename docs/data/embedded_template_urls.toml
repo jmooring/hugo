@@ -18,6 +18,7 @@
 'twitter_cards' = 'twitter_cards.html'
 
 # Render hooks
+'render-codeblock-d2' = '_default/_markup/render-codeblock-d2.html'
 'render-codeblock-goat' = '_default/_markup/render-codeblock-goat.html'
 'render-image' = '_default/_markup/render-image.html'
 'render-link' = '_default/_markup/render-link.html'
