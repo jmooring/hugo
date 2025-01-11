@@ -1086,6 +1086,13 @@ config:
   cascade: []
   cleanDestinationDir: false
   contentDir: content
+  contentTypes:
+    text/asciidoc: {}
+    text/html: {}
+    text/markdown: {}
+    text/org: {}
+    text/pandoc: {}
+    text/rst: {}
   copyright: ""
   dataDir: data
   defaultContentLanguage: en
@@ -1102,6 +1109,16 @@ config:
     target: ""
     targets: null
     workers: 10
+  diagrams:
+    d2:
+      center: false
+      darkTheme: Dark Flagship Terrastruct
+      layoutEngine: dagre
+      lightTheme: Neutral Default
+      minify: true
+      padding: 0
+      scale: 1
+      sketch: false
   disableAliases: false
   disableDefaultLanguageRedirect: false
   disableHugoGeneratorInject: false
@@ -1221,8 +1238,9 @@ config:
         attribute:
           block: false
           title: true
+        autoDefinitionTermID: false
         autoHeadingID: true
-        autoHeadingIDType: github
+        autoIDType: github
         wrapStandAloneImageWithinParagraph: true
       renderHooks:
         image:
@@ -1467,6 +1485,7 @@ config:
       xml:
         keepWhitespace: false
   module:
+    auth: ""
     hugoVersion:
       extended: false
       max: ""
@@ -1864,7 +1883,11 @@ config_helpers:
       _merge: none
     cascade:
       _merge: none
+    contenttypes:
+      _merge: none
     deployment:
+      _merge: none
+    diagrams:
       _merge: none
     frontmatter:
       _merge: none
@@ -1918,6 +1941,30 @@ config_helpers:
       _merge: none
     taxonomies:
       _merge: none
+diagrams:
+  d2:
+    themes:
+      dark:
+      - Dark Flagship Terrastruct
+      - Dark Mauve
+      light:
+      - Aubergine
+      - Buttered Toast
+      - Colorblind Clear
+      - Cool Classics
+      - Earth Tones
+      - Everglade Green
+      - Flagship Terrastruct
+      - Grape Soda
+      - Mixed Berry Blue
+      - Neutral Default
+      - Neutral Grey
+      - Orange Creamsicle
+      - Origami
+      - Shirley Temple
+      - Terminal
+      - Terminal Grayscale
+      - Vanilla Nitro Cola
 output:
   layouts:
   - Example: Single page in "posts" section
@@ -3011,6 +3058,11 @@ tpl:
         Description: ""
         Examples: null
     diagrams:
+      D2:
+        Aliases: null
+        Args: null
+        Description: ""
+        Examples: null
       Goat:
         Aliases: null
         Args: null

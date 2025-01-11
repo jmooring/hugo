@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/gohugoio/hugo/cache/filecache"
+	"github.com/gohugoio/hugo/tpl/diagrams/diagrams_config"
 
 	"github.com/gohugoio/hugo/cache/httpcache"
 	"github.com/gohugoio/hugo/common/maps"
@@ -400,6 +401,14 @@ var allDecoderSetups = map[string]decodeWeight{
 		decode: func(d decodeWeight, p decodeConfig) error {
 			var err error
 			p.c.Deployment, err = deployconfig.DecodeConfig(p.p)
+			return err
+		},
+	},
+	"diagrams": {
+		key: "diagrams",
+		decode: func(d decodeWeight, p decodeConfig) error {
+			var err error
+			p.c.Diagrams, err = diagrams_config.Decode(p.p)
 			return err
 		},
 	},
