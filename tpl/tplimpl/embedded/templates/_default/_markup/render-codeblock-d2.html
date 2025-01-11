@@ -1,0 +1,19 @@
+{{- $class := printf "d2 svg-container %s" (or .Attributes.class "") | strings.TrimSpace }}
+{{- with diagrams.D2 .Inner .Attributes }}
+  <div
+    {{- with $class }} class="{{ . }}" {{- end }}
+    {{- with $.Attributes.id }} id="{{ . }}" {{- end }}
+    {{- with $.Attributes.title }} title="{{ . }}" {{- end -}}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      preserveAspectRatio="xMinYMin meet"
+      viewBox="{{ .ViewBox }}"
+      width="{{ .Width }}"
+      height="{{ .Height }}"
+    >
+      {{ .Inner }}
+    </svg>
+  </div>
+{{- end -}}

@@ -15,7 +15,14 @@ package diagrams
 
 import (
 	"html/template"
+
+	"github.com/gohugoio/hugo/deps"
 )
+
+// Namespace provides template functions for the diagrams namespace.
+type Namespace struct {
+	d *deps.Deps
+}
 
 type SVGDiagram interface {
 	// Wrapped returns the diagram as an SVG, including the <svg> container.
@@ -30,4 +37,7 @@ type SVGDiagram interface {
 
 	// Height returns the height of the SVG.
 	Height() int
+
+	// Viewbox returns the view box of the SVG.
+	ViewBox() string
 }

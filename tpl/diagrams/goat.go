@@ -20,7 +20,6 @@ import (
 	"strings"
 
 	"github.com/bep/goat"
-	"github.com/gohugoio/hugo/deps"
 	"github.com/spf13/cast"
 )
 
@@ -44,12 +43,11 @@ func (d goatDiagram) Height() int {
 	return d.d.Height
 }
 
-// Namespace provides template functions for the diagrams namespace.
-type Namespace struct {
-	d *deps.Deps
+func (d goatDiagram) ViewBox() string {
+	return ""
 }
 
-// Goat creates a new SVG diagram from input v.
+// Goat returns an SVG diagram object from the given GoAT markup.
 func (d *Namespace) Goat(v any) SVGDiagram {
 	var r io.Reader
 
