@@ -53,6 +53,7 @@ import (
 	"github.com/gohugoio/hugo/resources/kinds"
 	"github.com/gohugoio/hugo/resources/page"
 	"github.com/gohugoio/hugo/resources/page/pagemeta"
+	"github.com/gohugoio/hugo/tpl/diagrams/diagrams_config"
 	"github.com/spf13/afero"
 
 	xmaps "golang.org/x/exp/maps"
@@ -203,6 +204,10 @@ type Config struct {
 
 	// UglyURLs configuration. Either a boolean or a sections map.
 	UglyURLs any `mapstructure:"-"`
+
+	// The diagrams configuration section contains configuration options for creating diagrams.
+	// <docsmeta>{"identifiers": ["diagrams"] }</docsmeta>
+	Diagrams diagrams_config.Config `mapstructure:"-"`
 }
 
 type configCompiler interface {

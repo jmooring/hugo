@@ -33,6 +33,7 @@ var (
 		"build":         true,
 		"caches":        true,
 		"cascade":       true,
+		"diagrams":      true,
 		"frontmatter":   true,
 		"languages":     true,
 		"imaging":       true,

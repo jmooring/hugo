@@ -1,32 +1,47 @@
 ---
 title: diagrams.Goat
-description: Converts ASCII art to an SVG diagram, returning a GoAT diagram object.
+description: Returns an SVG diagram object from the given GoAT markup.
 categories: []
 keywords: []
 action:
   aliases: []
   related: []
-  returnType: diagrams.goatDiagram
-  signatures: ['diagrams.Goat INPUT']
+  returnType: diagrams.SVGDiagram
+  signatures: ['diagrams.Goat MARKUP']
 toc: true
 ---
 
-Useful in a [code block render hook], the `diagram.Goat` function converts ASCII art to an SVG diagram, returning a [GoAT] diagram object with the following methods:
+Useful in a [code block render hook], the `diagrams.Goat` function returns an SVG diagram object from the given [GoAT] diagram markup,
 
 [GoAT]: https://github.com/blampe/goat#readme
 [code block render hook]: /render-hooks/code-blocks/
 
-Inner
-: (`template.HTML`) Returns the SVG child elements without a wrapping `svg` element, allowing you to create your own wrapper.
+```go-html-template
+{{ $markup := `
+.---.     .-.       .-.     .---.
+| A +--->| 1 |<--->| 2 |<---+ B |
+'---'     '-'       '+'     '---'
+`
+}}
+{{ $d := diagrams.Goat $markup }}
+{{ $d.Wrapped }}
+```
+
+## Methods
+
+The SVG diagram object has the following methods:
 
 Wrapped
 : (`template.HTML`) Returns the SVG child elements wrapped in an `svg` element.
 
+Inner
+: (`template.HTML`) Returns the SVG child elements without a wrapping `svg` element, allowing you to create your own wrapper.
+
 Width
-: (`int`) Returns the width of the rendered diagram, in pixels.
+: (`int`) Returns the diagram width in pixels.
 
 Height
-: (`int`) Returns the height of the rendered diagram, in pixels.
+: (`int`) Returns the diagram height in pixels.
 
 ## GoAT Diagrams
 
@@ -36,7 +51,7 @@ Hugo natively supports [GoAT](https://github.com/bep/goat) diagrams with an [emb
 
 This Markdown:
 
-````
+````text
 ```goat
 .---.     .-.       .-.       .-.     .---.
 | A +--->| 1 |<--->| 2 |<--->| 3 |<---+ B |
