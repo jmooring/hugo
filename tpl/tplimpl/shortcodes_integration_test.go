@@ -264,6 +264,26 @@ Content: {{ .Content }}
 	b.AssertFileContent("public/index.html", "2c1dce3881be0513")
 }
 
+func TestMastodonShortcode(t *testing.T) {
+	t.Parallel()
+
+	files := `
+-- hugo.toml --
+disableKinds = ['home','rss','section','sitemap','taxonomy','term']
+-- layouts/_default/single.html --
+Hash: {{ .Content | hash.XxHash }}
+Content: {{ .Content }}
+-- content/p1.md --
+---
+title: p1
+---
+{{< mastodon url="https://socel.net/@BGP/113805114250504687" >}}
+`
+
+	b := hugolib.Test(t, files)
+	b.AssertFileContent("public/p1/index.html", "141a2cb6d28f9710")
+}
+
 func TestParamShortcode(t *testing.T) {
 	t.Parallel()
 
