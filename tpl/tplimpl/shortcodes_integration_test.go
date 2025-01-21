@@ -294,6 +294,56 @@ B: {{% param "b" %}}
 	)
 }
 
+func TestPeerTubeShortcode(t *testing.T) {
+	t.Parallel()
+
+	files := `
+	-- hugo.toml --
+
+disableKinds = ['home','rss','section','sitemap','taxonomy','term']
+-- layouts/_default/single.html --
+Hash: {{ .Content | hash.XxHash }}
+Content: {{ .Content }}
+-- content/p1.md --
+---
+title: p1
+---
+{{< peertube url="https://toobnix.org/w/5jBegFpNbffA1nhmp32kqR" >}}
+-- content/p2.md --
+---
+title: p2
+---
+{{< peertube
+	url="https://toobnix.org/w/5jBegFpNbffA1nhmp32kqR"
+	start="42s"
+	stop="6m7s"
+	loading="lazy"
+	width=600
+	allowFullScreen=false
+	autoplay=true
+	controls=false
+	displayLink=false
+	displayTitle=false
+	displayWarning=false
+	loop=true
+	p2p=false
+>}}
+-- content/p3.md --
+---
+title: p3
+# This video was uploaded prior to the release of PeerTube API v6.1.0, so we
+# need to make a second API call to retrieve the metadata in order to calculate
+# the aspect ratio. See https://discourse.gohugo.io/t/29984/8.
+---
+{{< peertube url="https://video.ploud.fr/w/bmTZ68Grh97VsArAdSJtqW" >}}
+`
+
+	b := hugolib.Test(t, files)
+	b.AssertFileContent("public/p1/index.html", "a44d26e961464f11")
+	b.AssertFileContent("public/p2/index.html", "b2e81b817dcf6c46")
+	b.AssertFileContent("public/p3/index.html", "c5dc97686d25bcec")
+}
+
 func TestQRShortcode(t *testing.T) {
 	t.Parallel()
 
