@@ -30,6 +30,7 @@
 'highlight' = 'shortcodes/highlight.html'
 'instagram' = 'shortcodes/instagram.html'
 'param' = 'shortcodes/param.html'
+'peertube' = 'shortcodes/peertube.html'
 'qr' = 'shortcodes/qr.html'
 'ref' = 'shortcodes/ref.html'
 'relref' = 'shortcodes/relref.html'

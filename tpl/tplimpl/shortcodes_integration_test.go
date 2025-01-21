@@ -293,6 +293,47 @@ B: {{% param "b" %}}
 	)
 }
 
+func TestPeerTubeShortcode(t *testing.T) {
+	t.Parallel()
+
+	files := `
+	-- hugo.toml --
+
+disableKinds = ['home','rss','section','sitemap','taxonomy','term']
+-- layouts/_default/single.html --
+Hash: {{ .Content | hash.XxHash }}
+Content: {{ .Content }}
+-- content/p1.md --
+---
+title: p1
+---
+{{< peertube url="https://toobnix.org/w/5jBegFpNbffA1nhmp32kqR" >}}
+-- content/p2.md --
+---
+title: p2
+---
+{{< peertube
+	url="https://toobnix.org/w/5jBegFpNbffA1nhmp32kqR"
+	start="42s"
+	stop="6m7s"
+	loading="lazy"
+	width=600
+	allowFullScreen=false
+	autoplay=true
+	controls=false
+	displayLink=false
+	displayTitle=false
+	displayWarning=false
+	loop=true
+	p2p=false
+>}}
+`
+
+	b := hugolib.Test(t, files)
+	b.AssertFileContent("public/p1/index.html", "a44d26e961464f11")
+	b.AssertFileContent("public/p2/index.html", "b2e81b817dcf6c46")
+}
+
 func TestQRShortcode(t *testing.T) {
 	t.Parallel()
 
