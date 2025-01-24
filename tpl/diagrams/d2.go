@@ -262,6 +262,7 @@ func createD2SVG(markup string, opts *d2Options) (*d2SVG, error) {
 		Pad:         go2.Pointer(int64(opts.Padding)),
 		Scale:       go2.Pointer(float64(opts.Scale)),
 		Sketch:      go2.Pointer(bool(opts.Sketch)),
+		NoXMLTag:    go2.Pointer(true),
 	}
 
 	compileOpts := &d2lib.CompileOptions{
