@@ -138,17 +138,17 @@ x -> y
 	// themes, layout engines, etc. Do not in CI environments.
 
 	if !htesting.IsCI() {
-		b.AssertFileContentEquals("public/integration_tests/a/index.html", "fa2582e85685c408")
-		b.AssertFileContentEquals("public/integration_tests/b/index.html", "24d992429d505fd2")
-		b.AssertFileContentEquals("public/integration_tests/c/index.html", "cc65d4c0babb4f6b")
-		b.AssertFileContentEquals("public/integration_tests/d/index.html", "d06f7f42e9b669a0")
-		b.AssertFileContentEquals("public/integration_tests/e/index.html", "d6cdf2e7ddc55d7d")
-		b.AssertFileContentEquals("public/integration_tests/f/index.html", "9533ce7238ee3b53")
-		b.AssertFileContentEquals("public/integration_tests/g/index.html", "f04d79b83de9412b")
-		b.AssertFileContentEquals("public/integration_tests/h/index.html", "3c3c58b30bd0964a")
-		b.AssertFileContentEquals("public/integration_tests/i/index.html", "2638436e272f9ea5")
-		b.AssertFileContentEquals("public/integration_tests/j/index.html", "d3e1ab5f77ca771b")
-		b.AssertFileContentEquals("public/integration_tests/k/index.html", "51bc4d3250ac1132")
+		b.AssertFileContentEquals("public/integration_tests/a/index.html", "9a2b0619970bfda8")
+		b.AssertFileContentEquals("public/integration_tests/b/index.html", "2310f586a0fa6a8d")
+		b.AssertFileContentEquals("public/integration_tests/c/index.html", "c419eda6832d572e")
+		b.AssertFileContentEquals("public/integration_tests/d/index.html", "8b723798b9d015b8")
+		b.AssertFileContentEquals("public/integration_tests/e/index.html", "d531798f422f8fd7")
+		b.AssertFileContentEquals("public/integration_tests/f/index.html", "23bd83c184c964d3")
+		b.AssertFileContentEquals("public/integration_tests/g/index.html", "aaaa063aef29fb32")
+		b.AssertFileContentEquals("public/integration_tests/h/index.html", "4694a551a2791245")
+		b.AssertFileContentEquals("public/integration_tests/i/index.html", "752ff51711ee1727")
+		b.AssertFileContentEquals("public/integration_tests/j/index.html", "75dcff78b5f3b1fd")
+		b.AssertFileContentEquals("public/integration_tests/k/index.html", "ae11d3ac308125d1")
 	}
 }
 
@@ -218,8 +218,8 @@ c -> d
 
 		b := hugolib.Test(t, files)
 
-		b.AssertFileContentEquals("public/p1/index.html", "598462e29e2db6a1")
-		b.AssertFileContentEquals("public/p2/index.html", "f5963ce79e17b7b9")
+		b.AssertFileContentEquals("public/p1/index.html", "5a0dd875164f4a13")
+		b.AssertFileContentEquals("public/p2/index.html", "5d64b9b935bdfd16")
 	}
 }
 
@@ -301,5 +301,5 @@ disableKinds = ['page','rss','section','sitemap','taxonomy','term']
 
 	b := hugolib.Test(t, files)
 
-	b.AssertFileContent("public/index.html", "d75687d5c9161548")
+	b.AssertFileContent("public/index.html", "e51f76bec42063f5")
 }
