@@ -1272,24 +1272,31 @@ config:
   ignoreVendorPaths: ''
   imaging:
     anchor: smart
+    avif:
+      compression: lossy
+      encoderSpeed: 10
+      hint: photo
+      quality: 60
     bgColor: ffffff
-    compression: lossy
     exif:
       disableDate: false
       disableLatLong: false
       excludeFields: GPS|Exif|Exposure[M|P|B]|Contrast|Resolution|Sharp|JPEG|Metering|Sensing|Saturation|ColorSpace|Flash|WhiteBalance
       includeFields: ''
+    jpeg:
+      quality: 75
     meta:
       fields:
       - '! *{GPS,Exif,Exposure[MPB],Contrast,Resolution,Sharp,JPEG,Metering,Sensing,Saturation,ColorSpace,Flash,WhiteBalance}*'
       sources:
       - exif
       - iptc
-    quality: 75
     resampleFilter: box
     webp:
+      compression: lossy
       hint: photo
       method: 2
+      quality: 75
       useSharpYuv: false
   languages:
     en:
@@ -1316,6 +1323,16 @@ config:
       verbose: false
       workingFolderCurrent: false
     defaultMarkdownHandler: goldmark
+    diagrams:
+      d2:
+        center: false
+        darkTheme: Dark Flagship Terrastruct
+        layoutEngine: dagre
+        lightTheme: Neutral Default
+        minify: true
+        padding: 0
+        scale: 1
+        sketch: false
     goldmark:
       duplicateResourceFiles: false
       extensions:
@@ -2043,6 +2060,8 @@ config:
       weight: 0
   sectionPagesMenu: ''
   security:
+    allowContent:
+    - '! ^text/html$'
     enableInlineShortcodes: false
     exec:
       allow:
@@ -2202,6 +2221,31 @@ config_helpers:
       _merge: none
     versions:
       _merge: none
+diagrams:
+  d2:
+    themes:
+      dark:
+      - Dark Flagship Terrastruct
+      - Dark Mauve
+      light:
+      - Aubergine
+      - Buttered Toast
+      - C4
+      - Colorblind Clear
+      - Cool Classics
+      - Earth Tones
+      - Everglade Green
+      - Flagship Terrastruct
+      - Grape Soda
+      - Mixed Berry Blue
+      - Neutral Default
+      - Neutral Grey
+      - Orange Creamsicle
+      - Origami
+      - Shirley Temple
+      - Terminal
+      - Terminal Grayscale
+      - Vanilla Nitro Cola
 output:
   layouts: {}
 tpl:
@@ -2765,11 +2809,16 @@ tpl:
         Description: VisualizeSpaces returns a string with spaces replaced by a visible string.
         Examples: []
     diagrams:
+      D2:
+        Aliases: null
+        Args: null
+        Description: ''
+        Examples: null
       Goat:
         Aliases: null
         Args:
         - v
-        Description: Goat creates a new SVG diagram from input v.
+        Description: Goat returns an SVG diagram created from the given GoAT markup.
         Examples: []
     encoding:
       Base64Decode:
@@ -4612,11 +4661,15 @@ tpl:
         - highlight
         Args:
         - s
-        - lang
-        - opts
+        - args
         Description: |-
-          Highlight returns a copy of s as an HTML string with syntax
+          Highlight returns a copy of CODE as an HTML string with syntax
           highlighting applied.
+          
+          	transform.Highlight CODE [LANG] [OPTIONS]
+          
+          LANG is optional; it can also be set via the type option in OPTIONS, which
+          makes this work the same way as HighlightCodeBlock.
         Examples: []
       HighlightCodeBlock:
         Aliases: null

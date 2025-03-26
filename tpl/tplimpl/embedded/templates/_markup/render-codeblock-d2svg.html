@@ -1,0 +1,39 @@
+{{- $class := printf "d2-svg-container %s" (or .Attributes.class "") | strings.TrimSpace }}
+{{- $markup := .Inner }}
+{{- with .Attributes.file }}
+  {{- with or ($.Page.Resources.GetMatch .) (resources.GetMatch .) }}
+    {{- $markup = .Content }}
+  {{- else }}
+    {{- errorf "the embedded code block render hook for D2 diagrams was unable to fine the specified file: %s: see %s" . $.Position }}
+  {{- end }}
+{{- end }}
+{{- with $markup }}
+  {{- $opts := dict
+    "center"        $.Attributes.center
+    "darktheme"     $.Attributes.darktheme
+    "layoutengine"  $.Attributes.layoutengine
+    "lighttheme"    $.Attributes.lighttheme
+    "minify"        $.Attributes.minify
+    "padding"       $.Attributes.padding
+    "salt"          (add $.Ordinal 1)
+    "scale"         $.Attributes.scale
+    "sketch"        $.Attributes.sketch
+  }}
+  {{- with diagrams.D2 $markup $opts -}}
+    <div
+      {{- with $class }} class="{{ . }}" {{- end }}
+      {{- with $.Attributes.id }} id="{{ . }}" {{- end }}
+      {{- with $.Attributes.title }} title="{{ . }}" {{- end -}}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        width="{{ .Width }}"
+        height="{{ .Height }}"
+        viewBox="{{ .ViewBox }}"
+        preserveAspectRatio="{{ .PreserveAspectRatio }}">
+        {{ .Inner }}
+      </svg>
+    </div>
+  {{- end }}
+{{- end -}}
