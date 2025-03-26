@@ -1224,6 +1224,16 @@ config:
       verbose: false
       workingFolderCurrent: false
     defaultMarkdownHandler: goldmark
+    diagrams:
+      d2:
+        center: false
+        darkTheme: Dark Flagship Terrastruct
+        layoutEngine: dagre
+        lightTheme: Neutral Default
+        minify: true
+        padding: 0
+        scale: 1
+        sketch: false
     goldmark:
       duplicateResourceFiles: false
       extensions:
@@ -1499,7 +1509,6 @@ config:
     tdewolff:
       css:
         inline: false
-        keepCSS2: false
         precision: 0
         version: 0
       html:
@@ -1522,7 +1531,6 @@ config:
         keepNumbers: false
         precision: 0
       svg:
-        inline: false
         keepComments: false
         precision: 0
       xml:
@@ -1891,7 +1899,7 @@ config:
       disable: false
     googleAnalytics:
       disable: false
-      respectDoNotTrack: false
+      respectDoNotTrack: true
     instagram:
       disable: false
       simple: false
@@ -2088,6 +2096,31 @@ config_helpers:
       _merge: none
     versions:
       _merge: none
+diagrams:
+  d2:
+    themes:
+      dark:
+      - Dark Flagship Terrastruct
+      - Dark Mauve
+      light:
+      - Aubergine
+      - Buttered Toast
+      - C4
+      - Colorblind Clear
+      - Cool Classics
+      - Earth Tones
+      - Everglade Green
+      - Flagship Terrastruct
+      - Grape Soda
+      - Mixed Berry Blue
+      - Neutral Default
+      - Neutral Grey
+      - Orange Creamsicle
+      - Origami
+      - Shirley Temple
+      - Terminal
+      - Terminal Grayscale
+      - Vanilla Nitro Cola
 output:
   layouts: {}
 tpl:
@@ -2651,6 +2684,11 @@ tpl:
         Description: ''
         Examples: null
     diagrams:
+      D2:
+        Aliases: null
+        Args: null
+        Description: ''
+        Examples: null
       Goat:
         Aliases: null
         Args: null
@@ -4232,9 +4270,9 @@ tpl:
           Note that this is the Unix-styled relative path including filename suffix,
           e.g. partials/header.html
         Examples:
-        - - '{{ if (templates.Exists "partials/header.html") }}Yes!{{ end }}'
+        - - '{{ if (templates.Exists "_partials/header.html") }}Yes!{{ end }}'
           - Yes!
-        - - '{{ if not (templates.Exists "partials/doesnotexist.html") }}No!{{ end }}'
+        - - '{{ if not (templates.Exists "_partials/doesnotexist.html") }}No!{{ end }}'
           - No!
     time:
       AsTime:
@@ -4471,6 +4509,16 @@ tpl:
         - - '{{ urls.JoinPath (slice "a" "b") }}'
           - a/b
       Parse:
+        Aliases: null
+        Args: null
+        Description: ''
+        Examples: null
+      PathEscape:
+        Aliases: null
+        Args: null
+        Description: ''
+        Examples: null
+      PathUnescape:
         Aliases: null
         Args: null
         Description: ''
