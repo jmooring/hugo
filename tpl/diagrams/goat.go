@@ -15,12 +15,12 @@ package diagrams
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"io"
 	"strings"
 
 	"github.com/bep/goat"
-	"github.com/gohugoio/hugo/deps"
 	"github.com/spf13/cast"
 )
 
@@ -28,12 +28,12 @@ type goatDiagram struct {
 	d goat.SVG
 }
 
-func (d goatDiagram) Inner() template.HTML {
-	return template.HTML(d.d.Body)
-}
-
 func (d goatDiagram) Wrapped() template.HTML {
 	return template.HTML(d.d.String())
+}
+
+func (d goatDiagram) Inner() template.HTML {
+	return template.HTML(d.d.Body)
 }
 
 func (d goatDiagram) Width() int {
@@ -44,13 +44,16 @@ func (d goatDiagram) Height() int {
 	return d.d.Height
 }
 
-// Namespace provides template functions for the diagrams namespace.
-type Namespace struct {
-	d *deps.Deps
+func (d goatDiagram) ViewBox() string {
+	return fmt.Sprintf("0 0 %d %d", d.d.Width, d.d.Height)
 }
 
-// Goat creates a new SVG diagram from input v.
-func (d *Namespace) Goat(v any) SVGDiagram {
+func (d goatDiagram) PreserveAspectRatio() string {
+	return "xMidYMid meet"
+}
+
+// Goat returns an SVG diagram created from the given GoAT markup.
+func (ns *Namespace) Goat(v any) SVGDiagram {
 	var r io.Reader
 
 	switch vv := v.(type) {
