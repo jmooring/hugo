@@ -1492,6 +1492,16 @@ config:
       verbose: false
       workingFolderCurrent: false
     defaultMarkdownHandler: goldmark
+    diagrams:
+      d2:
+        center: false
+        darkTheme: Dark Flagship Terrastruct
+        layoutEngine: dagre
+        lightTheme: Neutral Default
+        minify: true
+        padding: 0
+        scale: 1
+        sketch: false
     goldmark:
       duplicateResourceFiles: false
       extensions:
@@ -2203,23 +2213,29 @@ config:
     indices:
     - applyFilter: false
       cardinalityThreshold: 0
+      minTokenLength: 0
       name: keywords
       pattern: ''
       toLower: false
+      tokenize: false
       type: basic
       weight: 100
     - applyFilter: false
       cardinalityThreshold: 0
+      minTokenLength: 0
       name: date
       pattern: ''
       toLower: false
+      tokenize: false
       type: basic
       weight: 10
     - applyFilter: false
       cardinalityThreshold: 0
+      minTokenLength: 0
       name: tags
       pattern: ''
       toLower: false
+      tokenize: false
       type: basic
       weight: 80
     threshold: 80
@@ -2235,6 +2251,7 @@ config:
   security:
     allowContent:
     - '! ^text/html$'
+    - '! ^text/org$'
     enableInlineShortcodes: false
     exec:
       allow:
@@ -2394,6 +2411,31 @@ config_helpers:
       _merge: none
     versions:
       _merge: none
+diagrams:
+  d2:
+    themes:
+      dark:
+      - Dark Flagship Terrastruct
+      - Dark Mauve
+      light:
+      - Aubergine
+      - Buttered Toast
+      - C4
+      - Colorblind Clear
+      - Cool Classics
+      - Earth Tones
+      - Everglade Green
+      - Flagship Terrastruct
+      - Grape Soda
+      - Mixed Berry Blue
+      - Neutral Default
+      - Neutral Grey
+      - Orange Creamsicle
+      - Origami
+      - Shirley Temple
+      - Terminal
+      - Terminal Grayscale
+      - Vanilla Nitro Cola
 output:
   layouts: {}
 tpl:
@@ -2987,11 +3029,16 @@ tpl:
         Description: VisualizeSpaces returns a string with spaces replaced by a visible string.
         Examples: []
     diagrams:
+      D2:
+        Aliases: null
+        Args: null
+        Description: ''
+        Examples: null
       Goat:
         Aliases: null
         Args:
         - v
-        Description: Goat creates a new SVG diagram from input v.
+        Description: Goat returns an SVG diagram created from the given GoAT markup.
         Examples: []
     encoding:
       Base64Decode:
@@ -4097,6 +4144,12 @@ tpl:
         Args:
         - r
         Description: 'PostProcess processes r after the build.\n\nDeprecated: Use templates.Defer instead.'
+        Examples: []
+      Publish:
+        Aliases: null
+        Args:
+        - r
+        Description: Publish publishes r to the destination and returns it.
         Examples: []
     safe:
       CSS:

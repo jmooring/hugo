@@ -15,7 +15,32 @@ package diagrams
 
 import (
 	"html/template"
+
+	"github.com/gohugoio/hugo/cache/dynacache"
+	"github.com/gohugoio/hugo/deps"
 )
+
+// New returns a new instance of the diagrams-namespaced template functions.
+func New(deps *deps.Deps) *Namespace {
+	if deps.MemCache == nil {
+		panic("must provide MemCache")
+	}
+
+	return &Namespace{
+		deps: deps,
+		cacheD2: dynacache.GetOrCreatePartition[string, []byte](
+			deps.MemCache,
+			"/tmpl/diagrams/d2",
+			dynacache.OptionsPartition{Weight: 30, ClearWhen: dynacache.ClearNever},
+		),
+	}
+}
+
+// Namespace provides template functions for the diagrams namespace.
+type Namespace struct {
+	deps    *deps.Deps
+	cacheD2 *dynacache.Partition[string, []byte]
+}
 
 type SVGDiagram interface {
 	// Wrapped returns the diagram as an SVG, including the <svg> container.
@@ -25,9 +50,15 @@ type SVGDiagram interface {
 	// This allows for the <svg> container to be created manually.
 	Inner() template.HTML
 
-	// Width returns the width of the SVG.
+	// Width returns the width attribute of the SVG.
 	Width() int
 
-	// Height returns the height of the SVG.
+	// Height returns the height attribute of the SVG.
 	Height() int
+
+	// ViewBox returns the viewBox attribute of the SVG.
+	ViewBox() string
+
+	// PreserveAspectRatio returns the preserveAspectRatio attribute of the SVG.
+	PreserveAspectRatio() string
 }
