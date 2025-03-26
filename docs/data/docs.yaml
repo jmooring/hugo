@@ -190,6 +190,9 @@ chroma:
     - coq
     Name: Coq
   - Aliases:
+    - core
+    Name: Core
+  - Aliases:
     - cr
     - crystal
     Name: Crystal
@@ -235,6 +238,7 @@ chroma:
   - Aliases:
     - docker
     - dockerfile
+    - containerfile
     Name: Docker
   - Aliases:
     - dtd
@@ -297,6 +301,12 @@ chroma:
     - gdscript3
     - gd3
     Name: GDScript3
+  - Aliases:
+    - gemtext
+    - gmi
+    - gmni
+    - gemini
+    Name: Gemtext
   - Aliases:
     - genshi
     - kid
@@ -453,6 +463,8 @@ chroma:
   - Aliases:
     - llvm
     Name: LLVM
+  - Aliases: null
+    Name: lox
   - Aliases:
     - lua
     - luau
@@ -516,6 +528,10 @@ chroma:
     - monkeyc
     Name: MonkeyC
   - Aliases:
+    - moonscript
+    - moon
+    Name: MoonScript
+  - Aliases:
     - morrowind
     - mwscript
     Name: MorrowindScript
@@ -554,6 +570,9 @@ chroma:
     - nsi
     - nsh
     Name: NSIS
+  - Aliases:
+    - nu
+    Name: Nu
   - Aliases:
     - objective-c
     - objectivec
@@ -1199,6 +1218,16 @@ config:
       verbose: false
       workingFolderCurrent: false
     defaultMarkdownHandler: goldmark
+    diagrams:
+      d2:
+        center: false
+        darkTheme: Dark Flagship Terrastruct
+        layoutEngine: dagre
+        lightTheme: Neutral Default
+        minify: true
+        padding: 0
+        scale: 1
+        sketch: false
     goldmark:
       duplicateResourceFiles: false
       extensions:
@@ -1253,8 +1282,10 @@ config:
       renderHooks:
         image:
           enableDefault: false
+          useEmbedded: auto
         link:
           enableDefault: false
+          useEmbedded: auto
       renderer:
         hardWraps: false
         unsafe: false
@@ -2007,6 +2038,31 @@ config_helpers:
       _merge: none
     taxonomies:
       _merge: none
+diagrams:
+  d2:
+    themes:
+      dark:
+      - Dark Flagship Terrastruct
+      - Dark Mauve
+      light:
+      - Aubergine
+      - Buttered Toast
+      - C4
+      - Colorblind Clear
+      - Cool Classics
+      - Earth Tones
+      - Everglade Green
+      - Flagship Terrastruct
+      - Grape Soda
+      - Mixed Berry Blue
+      - Neutral Default
+      - Neutral Grey
+      - Orange Creamsicle
+      - Origami
+      - Shirley Temple
+      - Terminal
+      - Terminal Grayscale
+      - Vanilla Nitro Cola
 output:
   layouts: {}
 tpl:
@@ -2572,6 +2628,11 @@ tpl:
         Description: ""
         Examples: null
     diagrams:
+      D2:
+        Aliases: null
+        Args: null
+        Description: ""
+        Examples: null
       Goat:
         Aliases: null
         Args: null
