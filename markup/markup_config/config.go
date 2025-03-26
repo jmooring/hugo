@@ -20,6 +20,7 @@ import (
 	"github.com/gohugoio/hugo/markup/goldmark/goldmark_config"
 	"github.com/gohugoio/hugo/markup/highlight"
 	"github.com/gohugoio/hugo/markup/tableofcontents"
+	"github.com/gohugoio/hugo/tpl/diagrams/diagrams_config"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -39,6 +40,9 @@ type Config struct {
 
 	// Configuration for the Asciidoc external markdown engine.
 	AsciidocExt asciidocext_config.Config
+
+	// Configuration for diagram rendering engines.
+	Diagrams diagrams_config.Config
 }
 
 func (c *Config) Init() error {
@@ -110,6 +114,7 @@ var Default = Config{
 
 	TableOfContents: tableofcontents.DefaultConfig,
 	Highlight:       highlight.DefaultConfig,
+	Diagrams:        diagrams_config.Default,
 
 	Goldmark:    goldmark_config.Default,
 	AsciidocExt: asciidocext_config.Default,
