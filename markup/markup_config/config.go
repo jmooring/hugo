@@ -23,6 +23,7 @@ import (
 	"github.com/gohugoio/hugo/markup/highlight"
 	"github.com/gohugoio/hugo/markup/rst/rst_config"
 	"github.com/gohugoio/hugo/markup/tableofcontents"
+	"github.com/gohugoio/hugo/tpl/diagrams/diagrams_config"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -45,6 +46,9 @@ type Config struct {
 
 	// Configuration for the reStructuredText external markdown engine.
 	RST rst_config.Config
+
+	// Configuration for diagram rendering engines.
+	Diagrams diagrams_config.Config
 }
 
 func (c *Config) Init() error {
@@ -128,6 +132,7 @@ var Default = Config{
 
 	TableOfContents: tableofcontents.DefaultConfig,
 	Highlight:       highlight.DefaultConfig,
+	Diagrams:        diagrams_config.Default,
 
 	Goldmark:    goldmark_config.Default,
 	AsciiDocExt: asciidocext_config.Default,
