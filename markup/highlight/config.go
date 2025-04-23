@@ -15,6 +15,7 @@
 package highlight
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -60,7 +61,7 @@ type Config struct {
 	NoClasses bool
 
 	// When set, line numbers will be printed.
-	LineNos            bool
+	LineNos            any
 	LineNumbersInTable bool
 
 	// When set, add links to line numbers
@@ -85,14 +86,37 @@ type Config struct {
 	GuessSyntax bool
 }
 
-func (cfg Config) toHTMLOptions() []html.Option {
+func (cfg Config) toHTMLOptions() ([]html.Option, error) {
 	var lineAnchors string
 	if cfg.LineAnchors != "" {
 		lineAnchors = cfg.LineAnchors + "-"
 	}
+
+	var lineNos bool
+	err := errors.New(`lineNos must be one of true, false, "inline", or "table"`)
+	switch v := cfg.LineNos.(type) {
+	case string:
+		switch v {
+		case "inline":
+			lineNos = true
+			cfg.LineNumbersInTable = false
+		case "table":
+			lineNos = true
+			cfg.LineNumbersInTable = true
+		default:
+			return nil, err
+		}
+	case bool:
+		lineNos = v
+	case nil:
+		lineNos = false
+	default:
+		return nil, err
+	}
+
 	options := []html.Option{
 		html.TabWidth(cfg.TabWidth),
-		html.WithLineNumbers(cfg.LineNos),
+		html.WithLineNumbers(lineNos),
 		html.BaseLineNumber(cfg.LineNoStart),
 		html.LineNumbersInTable(cfg.LineNumbersInTable),
 		html.WithClasses(!cfg.NoClasses),
@@ -117,7 +141,7 @@ func (cfg Config) toHTMLOptions() []html.Option {
 		}
 	}
 
-	return options
+	return options, nil
 }
 
 func applyOptions(opts any, cfg *Config) error {
