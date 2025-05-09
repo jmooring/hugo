@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gohugoio/hugo/markup/djot"
 	"github.com/gohugoio/hugo/markup/highlight"
 	"github.com/gohugoio/hugo/media"
 
@@ -80,6 +81,9 @@ func NewConverterProvider(cfg converter.ProviderConfig) (ConverterProvider, erro
 		return nil, err
 	}
 	if err := add(org.Provider, contentTypes.EmacsOrgMode.SubType, contentTypes.EmacsOrgMode.Suffixes()...); err != nil {
+		return nil, err
+	}
+	if err := add(djot.Provider, contentTypes.Djot.SubType, contentTypes.Djot.Suffixes()...); err != nil {
 		return nil, err
 	}
 
