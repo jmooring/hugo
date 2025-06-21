@@ -87,6 +87,14 @@ var Default = Config{
 			Block: false,
 		},
 	},
+	RenderHooks: RenderHooks{
+		Image: ImageRenderHook{
+			UseEmbedded: "never",
+		},
+		Link: LinkRenderHook{
+			UseEmbedded: "never",
+		},
+	},
 }
 
 // Config configures Goldmark.
@@ -118,7 +126,12 @@ type RenderHooks struct {
 type ImageRenderHook struct {
 	// Enable the default image render hook.
 	// We need to know if it is set or not, hence the pointer.
+	// Deprecated: Use UseEmbedded instead.
 	EnableDefault *bool
+
+	// When to use the embedded image render hook.
+	// One of never, always, or fallback. Default is never.
+	UseEmbedded string
 }
 
 func (h ImageRenderHook) IsEnableDefault() bool {
@@ -129,7 +142,12 @@ func (h ImageRenderHook) IsEnableDefault() bool {
 type LinkRenderHook struct {
 	// Disable the default image render hook.
 	// We need to know if it is set or not, hence the pointer.
+	// Deprecated: Use UseEmbedded instead.
 	EnableDefault *bool
+
+	// When to use the embedded link render hook.
+	// One of never, always, or fallback. Default is never.
+	UseEmbedded string
 }
 
 func (h LinkRenderHook) IsEnableDefault() bool {
