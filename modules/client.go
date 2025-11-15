@@ -25,6 +25,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -453,8 +454,8 @@ func (c *Client) downloadModuleVersion(path, version string) (*goModule, error) 
 		return nil, fmt.Errorf("failed to decode module download result: %w", err)
 	}
 
-	if m.Error != nil {
-		return nil, errors.New(m.Error.Err)
+	if m.Error != "" {
+		return nil, errors.New(m.Error)
 	}
 
 	return m, nil
@@ -717,12 +718,13 @@ func (c *Client) runGo(
 		return nil
 	}
 
-	stderr := new(bytes.Buffer)
+	stderrBuf := new(bytes.Buffer)
+	stdoutBuf := new(bytes.Buffer)
 
 	argsv := collections.StringSliceToInterfaceSlice(args)
 	argsv = append(argsv, hexec.WithEnviron(c.environ))
-	argsv = append(argsv, hexec.WithStderr(goOutputReplacerWriter{w: io.MultiWriter(stderr, os.Stderr)}))
-	argsv = append(argsv, hexec.WithStdout(stdout))
+	argsv = append(argsv, hexec.WithStderr(goOutputReplacerWriter{w: io.MultiWriter(stderrBuf, os.Stderr)}))
+	argsv = append(argsv, hexec.WithStdout(goOutputReplacerWriter{w: io.MultiWriter(stdoutBuf, stdout)}))
 	argsv = append(argsv, hexec.WithDir(c.ccfg.WorkingDir))
 	argsv = append(argsv, hexec.WithContext(ctx))
 
@@ -737,7 +739,17 @@ func (c *Client) runGo(
 			return nil
 		}
 
-		if strings.Contains(stderr.String(), "invalid version: unknown revision") {
+		if slices.Contains(args, "-json") {
+			m := &goModule{}
+			if decodeErr := json.NewDecoder(stdoutBuf).Decode(&m); decodeErr != nil {
+				return fmt.Errorf("failed to decode module download result: %w", decodeErr)
+			}
+			if m.Error != "" {
+				return fmt.Errorf("%s", m.Error)
+			}
+		}
+
+		if strings.Contains(stderrBuf.String(), "invalid version: unknown revision") {
 			// See https://github.com/gohugoio/hugo/issues/6825
 			c.logger.Println(`An unknown revision most likely means that someone has deleted the remote ref (e.g. with a force push to GitHub).
 To resolve this, you need to manually edit your go.mod file and replace the version for the module in question with a valid ref.
@@ -755,12 +767,12 @@ If you then run 'hugo mod graph' it should resolve itself to the most recent ver
 		}
 
 		// Too old Go version
-		if strings.Contains(stderr.String(), "flag provided but not defined") {
+		if strings.Contains(stderrBuf.String(), "flag provided but not defined") {
 			c.goBinaryStatus = goBinaryStatusTooOld
 			return nil
 		}
 
-		return fmt.Errorf("go command failed: %s", stderr)
+		return fmt.Errorf("go command failed: %s", stderrBuf)
 
 	}
 
@@ -908,22 +920,18 @@ func (cfg ClientConfig) toEnv() []string {
 type goBinaryStatus int
 
 type goModule struct {
-	Path     string         // module path
-	Version  string         // module version
-	Versions []string       // available module versions (with -versions)
-	Replace  *goModule      // replaced by this module
-	Time     *time.Time     // time version was created
-	Update   *goModule      // available update, if any (with -u)
-	Sum      string         // checksum
-	Main     bool           // is this the main module?
-	Indirect bool           // is this module only an indirect dependency of main module?
-	Dir      string         // directory holding files for this module, if any
-	GoMod    string         // path to go.mod file for this module, if any
-	Error    *goModuleError // error loading module
-}
-
-type goModuleError struct {
-	Err string // the error itself
+	Path     string     // module path
+	Version  string     // module version
+	Versions []string   // available module versions (with -versions)
+	Replace  *goModule  // replaced by this module
+	Time     *time.Time // time version was created
+	Update   *goModule  // available update, if any (with -u)
+	Sum      string     // checksum
+	Main     bool       // is this the main module?
+	Indirect bool       // is this module only an indirect dependency of main module?
+	Dir      string     // directory holding files for this module, if any
+	GoMod    string     // path to go.mod file for this module, if any
+	Error    string     // error loading module
 }
 
 type goModules []*goModule
