@@ -222,19 +222,26 @@ func (r *resourceAdapter) GetDependencyManager() identity.Manager {
 	return r.target.GetDependencyManager()
 }
 
-func (r resourceAdapter) cloneTo(targetPath string) resource.Resource {
+func (r *resourceAdapter) cloneTo(targetPath string) resource.Resource {
 	newtTarget := r.target.cloneTo(targetPath)
 	newInner := &resourceAdapterInner{
-		ctx:    r.ctx,
-		spec:   r.spec,
-		Staler: r.Staler,
-		target: newtTarget.(transformableResource),
+		ctx:         r.ctx,
+		spec:        r.spec,
+		Staler:      r.Staler,
+		target:      newtTarget.(transformableResource),
+		publishOnce: &publishOnce{},
 	}
-	if r.resourceAdapterInner.publishOnce != nil {
-		newInner.publishOnce = &publishOnce{}
+	// Copy the transformations list if any were applied to the original
+	// resource This preserves the transformation chain while allowing new
+	// transformations to be applied to the cloned resource.
+	newTransformations := &resourceTransformations{
+		transformations: r.transformations,
 	}
-	r.resourceAdapterInner = newInner
-	return &r
+	return &resourceAdapter{
+		resourceTransformations: newTransformations,
+		metaProvider:            newtTarget,
+		resourceAdapterInner:    newInner,
+	}
 }
 
 func (r *resourceAdapter) Process(spec string) (images.ImageResource, error) {

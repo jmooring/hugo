@@ -274,3 +274,67 @@ This was assets/a.txt
 	b.Assert(err, qt.IsNil)
 	b.AssertFileContent("public/p1/b.txt", "This was assets/a.txt")
 }
+
+// Issue 10584
+func TestCopyPageBundleResource(t *testing.T) {
+	t.Parallel()
+
+	files := `
+-- hugo.toml --
+disableKinds = ['home','rss','sitemap','taxonomy','term']
+-- content/p1/index.md --
+---
+title: p1
+---
+-- content/p1/a.txt --
+a.txt
+-- content/s1/_index.md --
+---
+title: s1
+---
+-- content/s1/b.txt --
+b.txt
+-- layouts/page.html --
+{{ with .Resources.Get "a.txt" }}
+  Original: {{ .RelPermalink }}
+  {{ with . | resources.Copy "d1/a-copy-1.txt" }}
+    Copy to relative path: {{ .RelPermalink }}
+  {{ end }}
+  {{ with . | resources.Copy "/d2/a-copy-2.txt" }}
+    Copy to absolute path: {{ .RelPermalink }}
+  {{ end }}
+{{ end }}
+-- layouts/section.html --
+{{ with .Resources.Get "b.txt" }}
+  Original: {{ .RelPermalink }}
+  {{ with . | resources.Copy "d3/b-copy-1.txt" }}
+    Copy to relative path: {{ .RelPermalink }}
+  {{ end }}
+  {{ with . | resources.Copy "/d4/b-copy-2.txt" }}
+    Copy to absolute path: {{ .RelPermalink }}
+  {{ end }}
+{{ end }}
+`
+
+	b := hugolib.Test(t, files)
+
+	// Leaf bundle
+	b.AssertFileContent("public/p1/a.txt", "a.txt")
+	b.AssertFileContent("public/p1/d1/a-copy-1.txt", "a.txt")
+	b.AssertFileContent("public/d2/a-copy-2.txt", "a.txt")
+	b.AssertFileContent("public/p1/index.html",
+		"Original: /p1/a.txt",
+		"Copy to relative path: /p1/d1/a-copy-1.txt",
+		"Copy to absolute path: /d2/a-copy-2.txt",
+	)
+
+	// Branch bundle
+	b.AssertFileContent("public/s1/b.txt", "b.txt")
+	b.AssertFileContent("public/s1/d3/b-copy-1.txt", "b.txt")
+	b.AssertFileContent("public/d4/b-copy-2.txt", "b.txt")
+	b.AssertFileContent("public/s1/index.html",
+		"Original: /s1/b.txt",
+		"Copy to relative path: /s1/d3/b-copy-1.txt",
+		"Copy to absolute path: /d4/b-copy-2.txt",
+	)
+}

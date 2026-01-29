@@ -428,7 +428,23 @@ func (l *genericResource) setTargetPath(d internal.ResourcePaths) {
 
 func (l *genericResource) cloneTo(targetPath string) resource.Resource {
 	c := l.clone()
-	c.paths = c.paths.FromTargetPath(targetPath)
+	newPaths := c.paths.FromTargetPath(targetPath)
+	// For page resources, handle base directory context based on whether the
+	// target path is relative or absolute.
+	if targetPath != "" && targetPath[0] != '/' {
+		// Relative path: preserve the base directory context so the resource
+		// stays within the bundle directory.
+		newPaths.BaseDirTarget = c.paths.BaseDirTarget
+		newPaths.BaseDirLink = c.paths.BaseDirLink
+		newPaths.TargetBasePaths = c.paths.TargetBasePaths
+	} else if targetPath != "" && targetPath[0] == '/' {
+		// Absolute path: clear all base directory context since the path is
+		// already absolute
+		newPaths.BaseDirTarget = ""
+		newPaths.BaseDirLink = ""
+		newPaths.TargetBasePaths = nil
+	}
+	c.paths = newPaths
 	return c
 }
 
