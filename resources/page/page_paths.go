@@ -50,6 +50,14 @@ type TargetPathDescriptor struct {
 	// 2) the file base name (TranslationBaseName).
 	BaseName string
 
+	// EffectiveSectionBase is the URL base path for a KindSection page with
+	// ancestor and own slugs applied. Replaces Section.Base() when non-empty.
+	EffectiveSectionBase string
+
+	// EffectiveContainerDir is the container directory for a leaf page with
+	// ancestor section slugs applied. Replaces Path.ContainerDir() when non-empty.
+	EffectiveContainerDir string
+
 	// PrefixFilePath contains zero or more content dimensions used as a file
 	// path prefix. Dimensions are ordered role/version/language for
 	// single-host and language/role/version for multihost.
@@ -165,6 +173,8 @@ func CreateTargetPaths(d TargetPathDescriptor) (tp TargetPaths) {
 	} else if d.Kind != kinds.KindPage && d.URL == "" && d.Section.Base() != "/" {
 		if d.ExpandedPermalink != "" {
 			pb.Add(d.ExpandedPermalink)
+		} else if d.EffectiveSectionBase != "" {
+			pb.Add(d.EffectiveSectionBase)
 		} else {
 			pb.Add(d.Section.Base())
 		}
@@ -206,7 +216,11 @@ func CreateTargetPaths(d TargetPathDescriptor) (tp TargetPaths) {
 		if d.ExpandedPermalink != "" {
 			pb.Add(d.ExpandedPermalink)
 		} else {
-			if dir := d.Path.ContainerDir(); dir != "" {
+			dir := d.EffectiveContainerDir
+			if dir == "" {
+				dir = d.Path.ContainerDir()
+			}
+			if dir != "" {
 				pb.Add(dir)
 			}
 			if d.BaseName != "" {
