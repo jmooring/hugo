@@ -205,5 +205,80 @@ func createTargetPathDescriptor(p *pageState) (page.TargetPathDescriptor, error)
 		}
 	}
 
+	unnormalized := p.s.Conf.DisablePathToLower()
+	if kinds.IsBranch(p.Kind()) && !p.IsHome() {
+		desc.EffectiveSectionBase = sectionEffectiveBase(p, unnormalized)
+	} else if !kinds.IsBranch(p.Kind()) {
+		desc.EffectiveContainerDir = leafEffectiveContainerDir(p, unnormalized)
+	}
+
 	return desc, nil
+}
+
+// sectionEffectiveBase returns the URL base path for the given section with
+// slugs applied. Only actual section pages (those with an _index.md) can
+// carry a slug; plain intermediate directories cannot.
+func sectionEffectiveBase(p *pageState, unnormalized bool) string {
+	if p.IsHome() {
+		return "/"
+	}
+
+	pi := p.m.pathInfo
+	if unnormalized {
+		pi = pi.Unnormalized()
+	}
+	fsBase := pi.Base()
+
+	slug := p.m.Slug()
+
+	parent := p.Parent()
+	if parent == nil || parent.IsHome() {
+		// Top-level section.
+		if slug == "" {
+			return fsBase
+		}
+		i := strings.LastIndex(fsBase, "/")
+		return fsBase[:i+1] + slug
+	}
+
+	parentPS := parent.(*pageState)
+	parentPI := parentPS.m.pathInfo
+	if unnormalized {
+		parentPI = parentPI.Unnormalized()
+	}
+
+	// pathSuffix covers any non-section intermediate directories between the
+	// parent section and this section, plus this section's own name.
+	pathSuffix := strings.TrimPrefix(fsBase, parentPI.Base())
+	if slug != "" {
+		// Replace only the final segment with the slug.
+		i := strings.LastIndex(pathSuffix, "/")
+		pathSuffix = pathSuffix[:i+1] + slug
+	}
+
+	return sectionEffectiveBase(parentPS, unnormalized) + pathSuffix
+}
+
+// leafEffectiveContainerDir returns the container directory for a leaf page
+// with ancestor section slugs applied.
+func leafEffectiveContainerDir(p *pageState, unnormalized bool) string {
+	pi := p.m.pathInfo
+	if unnormalized {
+		pi = pi.Unnormalized()
+	}
+	contDir := pi.ContainerDir()
+
+	sec, ok := p.CurrentSection().(*pageState)
+	if !ok || sec.IsHome() {
+		return contDir
+	}
+
+	secPI := sec.m.pathInfo
+	if unnormalized {
+		secPI = secPI.Unnormalized()
+	}
+	secFSBase := secPI.Base()
+	secEffective := sectionEffectiveBase(sec, unnormalized)
+
+	return secEffective + strings.TrimPrefix(contDir, secFSBase)
 }

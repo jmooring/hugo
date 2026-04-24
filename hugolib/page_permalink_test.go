@@ -75,7 +75,7 @@ canonifyURLs = %t
 ---
 title: Page
 slug: %q
-url: %q	
+url: %q
 output: ["HTML"]
 ---
 `, test.base, test.uglyURLs, test.canonifyURLs, test.file, test.slug, test.url)
@@ -172,4 +172,137 @@ Some content.
 	b.AssertFileContent("public/myblog/p1/index.html", "Single: A page|Hello|en|RelPermalink: /myblog/p1/|Permalink: https://example.com/myblog/p1/|")
 	b.AssertFileContent("public/myblog/p2/index.html", "Single: A page|Hello|en|RelPermalink: /myblog/p2/|Permalink: https://example.com/myblog/p2/|")
 	b.AssertFileContent("public/myblog/p3/index.html", "Single: A page|Hello|en|RelPermalink: /myblog/p3/|Permalink: https://example.com/myblog/p3/|")
+}
+
+// Issue 14352
+func TestSectionSlugIssue14352(t *testing.T) {
+	t.Parallel()
+
+	files := `
+-- hugo.toml --
+disableKinds = ['rss','sitemap','taxonomy','term']
+defaultContentLanguage = 'en'
+defaultContentLanguageInSubdir = true
+[languages.en]
+weight = 1
+[languages.es]
+weight = 2
+-- content/help/_index.en.md --
+---
+title: Help (en)
+---
+-- content/help/_index.es.md --
+---
+title: Ayuda (es)
+slug: ayuda
+---
+-- content/help/page.en.md --
+---
+title: Page (en)
+---
+-- content/help/page.es.md --
+---
+title: Página (es)
+---
+-- content/help/how-to/_index.en.md --
+---
+title: How To (en)
+---
+-- content/help/how-to/_index.es.md --
+---
+title: Cómo (es)
+slug: como
+---
+-- content/help/how-to/frob.en.md --
+---
+title: Frob (en)
+---
+-- content/help/how-to/frob.es.md --
+---
+title: Frob (es)
+slug: frobear
+---
+-- content/help/how-to/bundle/index.en.md --
+---
+title: Bundle (en)
+---
+-- content/help/how-to/bundle/index.es.md --
+---
+title: Bundle (es)
+---
+-- layouts/home.html --
+{{ .Title }}
+-- layouts/list.html --
+{{ .Title }}|{{ .RelPermalink }}
+-- layouts/single.html --
+{{ .Title }}|{{ .RelPermalink }}
+`
+
+	b := Test(t, files)
+
+	// English: no slugs, paths unchanged.
+	b.AssertFileContent("public/en/help/index.html", "Help (en)|/en/help/")
+	b.AssertFileContent("public/en/help/page/index.html", "Page (en)|/en/help/page/")
+	b.AssertFileContent("public/en/help/how-to/index.html", "How To (en)|/en/help/how-to/")
+	b.AssertFileContent("public/en/help/how-to/frob/index.html", "Frob (en)|/en/help/how-to/frob/")
+	b.AssertFileContent("public/en/help/how-to/bundle/index.html", "Bundle (en)|/en/help/how-to/bundle/")
+
+	// Spanish: section slug changes the section URL and propagates to children.
+	b.AssertFileContent("public/es/ayuda/index.html", "Ayuda (es)|/es/ayuda/")
+	b.AssertFileContent("public/es/ayuda/page/index.html", "Página (es)|/es/ayuda/page/")
+	b.AssertFileContent("public/es/ayuda/como/index.html", "Cómo (es)|/es/ayuda/como/")
+	b.AssertFileContent("public/es/ayuda/como/frobear/index.html", "Frob (es)|/es/ayuda/como/frobear/")
+	b.AssertFileContent("public/es/ayuda/como/bundle/index.html", "Bundle (es)|/es/ayuda/como/bundle/")
+}
+
+// Issue 14352 — taxonomy and term kinds.
+func TestTaxonomyTermSlugIssue14352(t *testing.T) {
+	t.Parallel()
+
+	files := `
+-- hugo.toml --
+disableKinds = ['rss','sitemap','section']
+defaultContentLanguage = 'en'
+defaultContentLanguageInSubdir = true
+[languages.en]
+weight = 1
+[languages.es]
+weight = 2
+[taxonomies]
+tag = 'tags'
+-- content/tags/_index.en.md --
+---
+title: Tags (en)
+---
+-- content/tags/_index.es.md --
+---
+title: Etiquetas (es)
+slug: etiquetas
+---
+-- content/tags/js/_index.en.md --
+---
+title: JavaScript (en)
+---
+-- content/tags/js/_index.es.md --
+---
+title: JavaScript (es)
+slug: javascript
+---
+-- layouts/home.html --
+{{ .Title }}
+-- layouts/taxonomy.html --
+{{ .Title }}|{{ .RelPermalink }}
+-- layouts/term.html --
+{{ .Title }}|{{ .RelPermalink }}
+`
+
+	b := Test(t, files)
+
+	// English: no slugs, paths unchanged.
+	b.AssertFileContent("public/en/tags/index.html", "Tags (en)|/en/tags/")
+	b.AssertFileContent("public/en/tags/js/index.html", "JavaScript (en)|/en/tags/js/")
+
+	// Spanish: taxonomy slug and term slug applied.
+	b.AssertFileContent("public/es/etiquetas/index.html", "Etiquetas (es)|/es/etiquetas/")
+	b.AssertFileContent("public/es/etiquetas/javascript/index.html", "JavaScript (es)|/es/etiquetas/javascript/")
 }
