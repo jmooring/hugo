@@ -606,6 +606,50 @@ func (s *TemplateStore) LookupPagesLayout(q TemplateQuery) *TemplInfo {
 	return best1.templ
 }
 
+// LookupPagesLayoutAtPath is like LookupPagesLayout but only checks the exact
+// given path without walking up to parent directories.
+func (s *TemplateStore) LookupPagesLayoutAtPath(q TemplateQuery) *TemplInfo {
+	q.init()
+	key := s.key(q.Path)
+
+	v := s.treeMain.Get(key)
+	if v == nil {
+		return nil
+	}
+
+	best1 := s.getBest()
+	defer s.putBest(best1)
+
+	for k, vv := range v {
+		if vv.category != q.Category {
+			continue
+		}
+		if !q.Consider(vv) {
+			continue
+		}
+		weight := s.dh.compareDescriptors(q.Category, q.Desc, k.d, q.Sites, vv.matrix)
+		if best1.isBetter(weight, vv) {
+			best1.updateValues(weight, key, k.d, vv)
+		}
+	}
+
+	if best1.w.w1 <= 0 {
+		return nil
+	}
+	m := best1.templ
+	if m.noBaseOf {
+		return m
+	}
+	slashCountKey := strings.Count(key, "/")
+	best1.reset()
+	m.findBestMatchBaseof(s, q.Desc, q.Sites, key, slashCountKey, best1)
+	if best1.w.w1 <= 0 {
+		return nil
+	}
+
+	return best1.templ
+}
+
 func (s *TemplateStore) LookupPartial(pth string) *TemplInfo {
 	ti, _ := s.cacheLookupPartials.GetOrCreate(pth, func() (*TemplInfo, error) {
 		pi := s.opts.PathParser.Parse(files.ComponentFolderLayouts, pth).ForType(paths.TypePartial)

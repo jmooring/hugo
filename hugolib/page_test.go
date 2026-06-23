@@ -2167,3 +2167,34 @@ EF
 	b.AssertFileContent("public/s4/p9/index.html", "EF")
 	b.AssertFileContent("public/s4/p10/index.html", "EF")
 }
+
+// See issue 15056.
+func TestRenderViewSubdir(t *testing.T) {
+	t.Parallel()
+
+	files := `
+-- hugo.toml --
+disableKinds = ['home','rss','section','sitemap','taxonomy','term']
+-- content/s1/p1.md --
+---
+title: p1
+---
+-- layouts/s1/p1/page.html --
+{{ .Render "a" }}|{{ .Render "b" }}|{{ .Render "c" }}|{{ .Render "views/d" }}|{{ .Render "views/e" }}|{{ .Render "views/f" }}
+-- layouts/s1/p1/a.html --
+a{{- /**/ -}}
+-- layouts/s1/b.html --
+b{{- /**/ -}}
+-- layouts/c.html --
+c{{- /**/ -}}
+-- layouts/s1/p1/views/d.html --
+d{{- /**/ -}}
+-- layouts/s1/views/e.html --
+e{{- /**/ -}}
+-- layouts/views/f.html --
+f{{- /**/ -}}
+`
+
+	b := Test(t, files)
+	b.AssertFileContent("public/s1/p1/index.html", "a|b|c|d|e|f")
+}
