@@ -140,13 +140,22 @@ func (po *pageOutput) Aliases() []string {
 
 		a = path.Join(baseDir, a)
 
-		if conf.C.IsUglyURLSection(p.Section()) && !strings.HasSuffix(a, ".html") {
-			a += ".html"
+		if conf.C.IsUglyURLSection(p.Section()) && !hasMediaTypeSuffix(a, f) {
+			a += f.MediaType.FirstSuffix.FullSuffix
 		}
 
 		aliases[i] = a
 	}
 	return aliases
+}
+
+func hasMediaTypeSuffix(s string, f output.Format) bool {
+	for _, suffix := range f.MediaType.Suffixes() {
+		if strings.HasSuffix(s, f.MediaType.Delimiter+suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 func (po *pageOutput) incrRenderState() {

@@ -96,7 +96,7 @@ func (s *Site) writeDestAlias(path, permalink string, outputFormat output.Format
 func (s *Site) publishDestAlias(allowRoot bool, path, permalink string, outputFormat output.Format, p page.Page) (err error) {
 	handler := newAliasHandler(s.GetTemplateStore(), s.Log, allowRoot)
 
-	targetPath, err := handler.targetPathAlias(path)
+	targetPath, err := handler.targetPathAlias(path, outputFormat)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (s *Site) publishDestAlias(allowRoot bool, path, permalink string, outputFo
 	return s.publisher.Publish(pd)
 }
 
-func (a aliasHandler) targetPathAlias(src string) (string, error) {
+func (a aliasHandler) targetPathAlias(src string, outputFormat output.Format) (string, error) {
 	originalAlias := src
 	if len(src) <= 0 {
 		return "", fmt.Errorf("alias \"\" is an empty string")
@@ -178,11 +178,12 @@ func (a aliasHandler) targetPathAlias(src string) (string, error) {
 
 	// Add the final touch
 	alias = strings.TrimPrefix(alias, "/")
-	if strings.HasSuffix(alias, "/") {
-		alias = alias + "index.html"
-	} else if !strings.HasSuffix(alias, ".html") {
-		alias = alias + "/" + "index.html"
+	for _, s := range outputFormat.MediaType.Suffixes() {
+		if strings.HasSuffix(alias, outputFormat.MediaType.Delimiter+s) {
+			return filepath.FromSlash(alias), nil
+		}
 	}
+	alias = alias + "/" + outputFormat.BaseName + outputFormat.MediaType.FirstSuffix.FullSuffix
 
 	return filepath.FromSlash(alias), nil
 }
