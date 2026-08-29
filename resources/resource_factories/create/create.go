@@ -244,6 +244,7 @@ func (c *Client) match(name, pattern string, matchFunc func(r resource.Resource)
 
 	return c.rs.ResourceCache.GetOrCreateResources(key, func() (resource.Resources, error) {
 		var res resource.Resources
+		seen := make(map[string]bool)
 
 		handle := func(info hugofs.FileMetaInfo) (bool, error) {
 			r, err := c.getOrCreateFileResource(info)
@@ -253,6 +254,18 @@ func (c *Client) match(name, pattern string, matchFunc func(r resource.Resource)
 
 			if matchFunc != nil && !matchFunc(r) {
 				return false, nil
+			}
+
+			// Deduplicate by (source root, normalized name): case-variant
+			// directories within the same mount (e.g. a/ and A/) are the
+			// same asset, but different mount sources with the same path are
+			// intentionally distinct overlay resources.
+			if nop, ok := r.(resource.NameNormalizedProvider); ok {
+				dedupeKey := info.Meta().SourceRoot + ":" + nop.NameNormalized()
+				if seen[dedupeKey] {
+					return false, nil
+				}
+				seen[dedupeKey] = true
 			}
 
 			res = append(res, r)
@@ -332,7 +345,8 @@ func (c *Client) FromOpts(opts Options) (resource.Resource, error) {
 					return newReadSeeker()
 				},
 				TargetPath: opts.TargetPath,
-			})
+			},
+		)
 	})
 
 	return r, err

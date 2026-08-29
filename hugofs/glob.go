@@ -30,10 +30,7 @@ func Glob(fs afero.Fs, pattern string, handle func(fi FileMetaInfo) (bool, error
 	if pattern == "" {
 		return nil
 	}
-	root := hglob.ResolveRootDir(pattern)
-	if !strings.HasPrefix(root, "/") {
-		root = "/" + root
-	}
+
 	pattern = strings.ToLower(pattern)
 
 	g, err := hglob.GetGlob(pattern)
@@ -74,11 +71,12 @@ func Glob(fs afero.Fs, pattern string, handle func(fi FileMetaInfo) (bool, error
 
 	w := NewWalkway(
 		WalkwayConfig{
-			Root:           root,
+			Root:           "/",
 			Fs:             fs,
 			WalkFn:         wfn,
 			FailOnNotExist: true,
-		})
+		},
+	)
 
 	err = w.Walk()
 

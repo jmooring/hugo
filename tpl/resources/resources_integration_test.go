@@ -219,21 +219,21 @@ Home.
 
 	b := hugolib.Test(t, files)
 
+	// c.txt and C.txt both normalize to /files/c.txt; lowercase wins.
 	b.AssertFileContent("public/index.html", `
 files/a.txt: /files/a.txt
-# There are both C.txt and c.txt in the assets, but the Glob matching is case insensitive, so GetMatch returns the first.
-files/C*: /files/C.txt
-files/c*: /files/C.txt
+files/C*: /files/c.txt
+files/c*: /files/c.txt
 files/*b*: /files/b.txt
-/files/c*: /files/C.txt
+/files/c*: /files/c.txt
 /files/a.txt: /files/a.txt
-match files/C*: 2|
-match /files/C*: 2|
+match files/C*: 1|
+match /files/C*: 1|
 	`)
 
 	b.AssertFileContent("public/files/a.txt", "I am a.txt")
 	b.AssertFileContent("public/files/b.txt", "I am b.txt")
-	b.AssertFileContent("public/files/C.txt", "I am C.txt")
+	b.AssertFileContent("public/files/c.txt", "I am c.txt")
 }
 
 // Issue #12961
@@ -271,11 +271,66 @@ disableKinds = ['page','section','rss','sitemap','taxonomy','term']
 
 	b := hugolib.Test(t, files, hugolib.TestOptWarn())
 
-	b.AssertFileContent("public/index.html",
+	b.AssertFileContent(
+		"public/index.html",
 		".dartsass{color:red}",
 		".libsass{color:blue}",
 	)
 	b.AssertLogContains("! WARN  Dart Sass: hugo:vars")
+}
+
+// See issue 7686.
+// Assets in mixed-case directories must be findable with any glob case and
+// must always publish to a lowercase path, regardless of OS case-sensitivity.
+// When both assets/ab/foo.txt and assets/aB/foo.txt exist, the lowercase path wins.
+func TestAssetsMixedCaseDirectory(t *testing.T) {
+	t.Parallel()
+
+	files := `
+-- hugo.toml --
+disableKinds = ['page','rss','section','sitemap','taxonomy','term']
+-- assets/aB/1.txt --
+I am aB/1.txt
+-- assets/ab/1.txt --
+I am ab/1.txt
+-- assets/CD/2.txt --
+I am CD/2.txt
+-- assets/a/File.pdf --
+I am a/File.pdf
+-- assets/A/file.pdf --
+I am A/file.pdf
+-- layouts/home.html --
+GetMatch ab: {{ with resources.GetMatch "ab/*" }}{{ .RelPermalink }}|{{ .Content }}{{ end }}
+GetMatch aB: {{ with resources.GetMatch "aB/*" }}{{ .RelPermalink }}|{{ .Content }}{{ end }}
+GetMatch AB: {{ with resources.GetMatch "AB/*" }}{{ .RelPermalink }}|{{ .Content }}{{ end }}
+Match AB count: {{ len (resources.Match "AB/*") }}
+GetMatch CD: {{ with resources.GetMatch "CD/*" }}{{ .RelPermalink }}|{{ .Content }}{{ end }}
+GetMatch cd: {{ with resources.GetMatch "cd/*" }}{{ .RelPermalink }}|{{ .Content }}{{ end }}
+GetMatch a/file.pdf: {{ with resources.GetMatch "a/file.pdf" }}{{ .RelPermalink }}|{{ .Content }}{{ end }}
+GetMatch a/File.pdf: {{ with resources.GetMatch "a/File.pdf" }}{{ .RelPermalink }}|{{ .Content }}{{ end }}
+Match a count: {{ len (resources.Match "a/*") }}
+`
+
+	b := hugolib.Test(t, files)
+
+	b.AssertFileContent(
+		"public/index.html",
+		// Lowercase path wins when both ab/ and aB/ exist.
+		"GetMatch ab: /ab/1.txt|I am ab/1.txt",
+		"GetMatch aB: /ab/1.txt|I am ab/1.txt",
+		"GetMatch AB: /ab/1.txt|I am ab/1.txt",
+		// Duplicate suppressed: the lowercase directory was used as the walk root.
+		"Match AB count: 1",
+		// Mixed-case-only directory: found regardless of pattern case, URL is lowercase.
+		"GetMatch CD: /cd/2.txt|I am CD/2.txt",
+		"GetMatch cd: /cd/2.txt|I am CD/2.txt",
+		// Both a/File.pdf and A/file.pdf share the same normalized path (a/file.pdf);
+		// lowercase dir (a/) wins, so both patterns resolve to a/File.pdf.
+		"GetMatch a/file.pdf: /a/File.pdf|I am a/File.pdf",
+		"GetMatch a/File.pdf: /a/File.pdf|I am a/File.pdf",
+		// A/file.pdf deduplicates against a/File.pdf (same normalized path).
+		"Match a count: 1",
+	)
 }
 
 // See issue 15208.

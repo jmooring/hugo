@@ -20,6 +20,7 @@ import (
 	"path"
 	"runtime"
 	"sort"
+	"strings"
 
 	"github.com/bep/helpers/contexthelpers"
 	"github.com/gohugoio/hugo/common/herrors"
@@ -181,6 +182,11 @@ func (f *componentFsDir) ReadDirWithContext(ctx context.Context, count int) ([]i
 			return fimim.Weight > fimjm.Weight
 		}
 
+		// For assets with the same normalized path, the lowercase name wins.
+		if f.fs.opts.Component == files.ComponentFolderAssets {
+			return fimi.Name() > fimj.Name()
+		}
+
 		return fimi.Name() < fimj.Name()
 	})
 
@@ -328,6 +334,12 @@ func (fs *componentFs) LstatIfPossible(name string) (os.FileInfo, bool, error) {
 func (fs *componentFs) applyMeta(fi FileNameIsDir, name string) (FileMetaInfo, bool) {
 	if runtime.GOOS == "darwin" {
 		name = norm.NFC.String(name)
+	}
+	// Asset directory path components are normalized to lowercase for consistent
+	// cross-platform results; the filename itself preserves its original case.
+	if fs.opts.Component == files.ComponentFolderAssets {
+		dir, base := path.Split(name)
+		name = strings.ToLower(dir) + base
 	}
 	fim := fi.(FileMetaInfo)
 	meta := fim.Meta()
